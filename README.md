@@ -1,5 +1,5 @@
 # sbom.sh-create
-SBOM.sh container analysis and scan using Grype provided as a GitHub Action
+SBOM.sh container and repository SBOM generation & sharing + vulnerability scan using Grype, Syft or Trivy provided as a GitHub Action
 # SBOM.sh GitHub Action
 
 This GitHub Action integrates with [sbom.sh](https://sbom.sh/) to generate and upload Software Bill of Materials (SBOM) for your projects. Utilizing the `codenotary/sbom.sh` container image, this action supports various open-source SBOM tools such as Trivy, Grype, and Syft.
@@ -36,32 +36,18 @@ jobs:
     name: "SBOM Generation"
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Generate SBOM
-        id: sbom_generation # Added an ID here to reference this step later
+        id: sbom_generation
         uses: codenotary/sbom.sh-create@main
         with:
-          scan_type: 'grypefs' # Or other supported types like 'trivyfs', 'syftfs', etc.
-          target: '/github/workspace' # If needed for the scan type, specify the target here.
+          scan_type: 'grypefs'
+          target: '.' # Assuming you want to scan the entire repository
 
       - name: Output SBOM URL
-        run: echo "The SBOM can be found at ${{ steps.sbom_generation.outputs.sbom_url }}" # Reference the output from the sbom_generation step
-      
-      # Additional steps like commenting on a PR can be added here
-      
-      - name: Comment on Pull Request
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "Generated SBOM is available at: ${{ steps.sbom_generation.outputs.sbom_url }}" # Reference the output from the sbom_generation step
-            })
+        run: echo "The SBOM can be found at $SBOM_SHARE_URL"
+
 ```
 
 ## Inputs
